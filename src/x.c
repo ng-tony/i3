@@ -428,7 +428,7 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
                 .height = con->rect.height,
             };
         }
-        if (!(borders_to_hide & ADJ_LOWER_SCREEN_EDGE)) {
+        if (border_style == BS_PIXEL && !(borders_to_hide & ADJ_LOWER_SCREEN_EDGE)) {
             rectangles[count++] = (xcb_rectangle_t){
                 .x = br.x,
                 .y = con->rect.height + (br.height + br.y),
@@ -437,7 +437,7 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
             };
         }
         /* pixel border have an additional line at the top */
-        if (border_style == BS_PIXEL && !(borders_to_hide & ADJ_UPPER_SCREEN_EDGE)) {
+        if (!(borders_to_hide & ADJ_UPPER_SCREEN_EDGE)) {
             rectangles[count++] = (xcb_rectangle_t){
                 .x = br.x,
                 .y = 0,
@@ -914,6 +914,8 @@ void x_push_node(Con *con) {
             }
         }
         rect.height = max_y + max_height;
+        rect.y += con->rect.height - rect.height;
+
         if (rect.height == 0)
             con->mapped = false;
     } else if (con->window == NULL) {
