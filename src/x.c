@@ -914,6 +914,9 @@ void x_push_node(Con *con) {
             }
         }
         rect.height = max_y + max_height;
+        if (con->layout == L_STACKED || con->layout == L_TABBED)
+            rect.y += con->rect.height - rect.height;
+
         if (rect.height == 0)
             con->mapped = false;
     } else if (con->window == NULL) {
