@@ -126,9 +126,9 @@ static bool binding_in_current_group(const Binding *bind) {
 
 static void grab_keycode_for_binding(xcb_connection_t *conn, Binding *bind, uint32_t keycode) {
     /* Grab the key in all combinations */
-#define GRAB_KEY(modifier)                                                                       \
-    do {                                                                                         \
-        xcb_grab_key(conn, 0, root, modifier, keycode, XCB_GRAB_MODE_SYNC, XCB_GRAB_MODE_ASYNC); \
+#define GRAB_KEY(modifier)                                                                        \
+    do {                                                                                          \
+        xcb_grab_key(conn, 0, root, modifier, keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC); \
     } while (0)
     const int mods = (bind->event_state_mask & 0xFFFF);
     DLOG("Binding %p Grabbing keycode %d with event state mask 0x%x (mods 0x%x)\n",
@@ -166,7 +166,7 @@ void grab_all_keys(xcb_connection_t *conn) {
             const int keycode = binding_keycode->keycode;
             const int mods = (binding_keycode->modifiers & 0xFFFF);
             DLOG("Binding %p Grabbing keycode %d with mods %d\n", bind, keycode, mods);
-            xcb_grab_key(conn, 0, root, mods, keycode, XCB_GRAB_MODE_SYNC, XCB_GRAB_MODE_ASYNC);
+            xcb_grab_key(conn, 0, root, mods, keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
         }
     }
 }
@@ -631,6 +631,7 @@ void switch_mode(const char *new_mode) {
         current_binding_mode = mode->name;
         translate_keysyms();
         grab_all_keys(conn);
+        regrab_all_buttons(conn);
 
         /* Reset all B_UPON_KEYRELEASE_IGNORE_MODS bindings to avoid possibly
          * activating one of them. */
@@ -1008,7 +1009,7 @@ bool load_keymap(void) {
 int *bindings_get_buttons_to_grab(void) {
     /* Let's make the reasonable assumption that there's no more than 25
      * buttons. */
-    int num_max = 25;
+    const int num_max = 25;
 
     int buffer[num_max];
     int num = 0;
@@ -1034,12 +1035,17 @@ int *bindings_get_buttons_to_grab(void) {
         }
 
         /* Avoid duplicates. */
+        bool exists = false;
         for (int i = 0; i < num; i++) {
-            if (buffer[i] == button)
-                continue;
+            if (buffer[i] == button) {
+                exists = true;
+                break;
+            }
         }
 
-        buffer[num++] = button;
+        if (!exists) {
+            buffer[num++] = button;
+        }
     }
     buffer[num++] = 0;
 

@@ -202,7 +202,8 @@ Floating windows are always on top of tiling windows.
 Since i3 4.21, it's possible to drag tiling containers using the mouse. The
 drag can be initiated either by dragging the window's titlebar or by pressing
 the <<floating_modifier>> and dragging the container while holding the
-left-click button.
+left-click button. See the <<config_tiling_drag>> option for configuring which
+action triggers the tiling drag.
 
 Once the drag is initiated and the cursor has left the original container, drop
 indicators are created according to the position of the cursor relatively to
@@ -511,8 +512,8 @@ your bindings in the same physical location on the keyboard, use keycodes.
 If you don’t switch layouts, and want a clean and simple config file, use
 keysyms.
 
-Some tools (such as +import+ or +xdotool+) might be unable to run upon a
-KeyPress event, because the keyboard/pointer is still grabbed. For these
+Some tools (such as +xdotool+) might be unable to run upon a
+KeyPress event, because the keyboard is still grabbed. For these
 situations, the +--release+ flag can be used, which will execute the command
 after the keys have been released.
 
@@ -1438,6 +1439,8 @@ bindsym Mod1+F fullscreen toggle
 
 You can configure how to initiate the tiling drag feature (see <<tiling_drag>>).
 
+The default is +modifier+.
+
 *Syntax*:
 --------------------------------
 tiling_drag off
@@ -2197,6 +2200,10 @@ bindsym $mod+x [class="(?i)firefox"] kill
 
 # kill only the About dialog from Firefox
 bindsym $mod+x [class="Firefox" window_role="About"] kill
+
+# kill all windows except for Firefox and Gnome Terminal.
+# case-insensitive and uses negative lookaheads, supported by PCRE
+bindsym $mod+x [class="^(?i)(?!firefox)(?!gnome-terminal).*"] kill
 
 # enable floating mode and move container to workspace 4
 for_window [class="^evil-app$"] floating enable, move container to workspace 4
